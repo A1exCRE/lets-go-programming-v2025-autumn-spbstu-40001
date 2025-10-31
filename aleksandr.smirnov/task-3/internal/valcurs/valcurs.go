@@ -1,4 +1,4 @@
-package models
+package valcurs
 
 import (
 	"encoding/xml"
@@ -22,17 +22,20 @@ type FloatValue float64
 
 func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var str string
+
 	if err := d.DecodeElement(&str, &start); err != nil {
 		return fmt.Errorf("parse XML value: %w", err)
 	}
 
 	normalized := strings.Replace(strings.TrimSpace(str), ",", ".", 1)
 	val, err := strconv.ParseFloat(normalized, 64)
+
 	if err != nil {
 		return fmt.Errorf("parse float %q: %w", str, err)
 	}
 
 	*f = FloatValue(val)
+
 	return nil
 }
 

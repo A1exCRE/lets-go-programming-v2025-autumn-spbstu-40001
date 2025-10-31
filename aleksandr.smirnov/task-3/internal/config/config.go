@@ -14,11 +14,13 @@ type Config struct {
 
 func LoadConfig(path string) (*Config, error) {
 	fileData, err := os.ReadFile(path)
+
 	if err != nil {
 		return nil, fmt.Errorf("read config file: %w", err)
 	}
 
 	var cfg Config
+
 	err = yaml.Unmarshal(fileData, &cfg)
 	if err != nil {
 		return nil, fmt.Errorf("parse YAML config: %w", err)
