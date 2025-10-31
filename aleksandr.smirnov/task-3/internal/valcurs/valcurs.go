@@ -1,4 +1,4 @@
-package valcurs
+package models
 
 import (
 	"encoding/xml"
