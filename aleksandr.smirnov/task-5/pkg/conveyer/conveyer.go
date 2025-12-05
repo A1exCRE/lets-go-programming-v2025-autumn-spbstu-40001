@@ -47,3 +47,34 @@ func New(size int) *Pipeline {
 		splitters: make([]splitterEntry, 0),
 	}
 }
+
+func (p *Pipeline) getOrCreateChannel(name string) chan string {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if ch, exists := p.channels[name]; exists {
+		return ch
+	}
+
+	ch := make(chan string, p.size)
+	p.channels[name] = ch
+
+	return ch
+}
+
+func (p *Pipeline) getChannel(name string) (chan string, bool) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	ch, exists := p.channels[name]
+	return ch, exists
+}
+
+func (p *Pipeline) closeAllChannels() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	for _, ch := range p.channels {
+		close(ch)
+	}
+}
