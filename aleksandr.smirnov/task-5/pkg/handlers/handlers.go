@@ -81,7 +81,8 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	group, groupCtx := errgroup.WithContext(ctx)
 
-	for _, inputChan := range inputs {
+	for _, ch := range inputs {
+		inputChan := ch
 		group.Go(func() error {
 			for {
 				select {
