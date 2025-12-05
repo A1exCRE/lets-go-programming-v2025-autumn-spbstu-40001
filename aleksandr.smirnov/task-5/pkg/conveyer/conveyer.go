@@ -108,6 +108,9 @@ func (p *Pipeline) RegisterDecorator(
 	input string,
 	output string,
 ) {
+	p.getOrCreateChannel(input)
+	p.getOrCreateChannel(output)
+
 	p.modifiers = append(p.modifiers, modifierEntry{
 		function: function,
 		input:    input,
@@ -120,8 +123,8 @@ func (p *Pipeline) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
-	if len(inputs) > 0 {
-		p.getOrCreateChannel(inputs[0])
+	for _, name := range inputs {
+		p.getOrCreateChannel(name)
 	}
 
 	p.getOrCreateChannel(output)
@@ -140,8 +143,8 @@ func (p *Pipeline) RegisterSeparator(
 ) {
 	p.getOrCreateChannel(input)
 
-	for i := 0; i <= len(outputs); i++ {
-		p.getOrCreateChannel(outputs[i])
+	for _, name := range outputs {
+		p.getOrCreateChannel(name)
 	}
 
 	p.splitters = append(p.splitters, splitterEntry{
