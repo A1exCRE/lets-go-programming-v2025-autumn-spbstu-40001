@@ -81,31 +81,31 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	group, groupCtx := errgroup.WithContext(ctx)
 
-	for _, ch := range inputs {
-		inputChan := ch
+	for _, inputChan := range inputs {
 		group.Go(func() error {
 			for {
 				select {
-				case <-ctx.Done():
+				case <-groupCtx.Done():
 					return nil
-				case data, ok := <-inputs[0]:
+				case data, ok := <-inputChan:
 					if !ok {
 						return nil
 					}
 
-					if strings.Contains(data, noMultiplexerText) {
+					if strings.Contains(data, noMultiplexer) {
 						continue
 					}
 
 					select {
 					case output <- data:
-					case <-ctx.Done():
+					case <-groupCtx.Done():
 						return nil
 					}
 				}
 			}
 		})
 	}
+
 
 	if err := group.Wait(); err != nil {
 		return fmt.Errorf("multiplexer error: %w", err)
