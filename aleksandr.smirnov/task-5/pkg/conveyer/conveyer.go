@@ -162,6 +162,41 @@ func (p *Pipeline) Run(ctx context.Context) error {
 
 	group, groupCtx := errgroup.WithContext(ctx)
 
+	for _, modifier := range p.modifiers {
+		inputChan := p.getOrCreateChannel(modifier.input)
+		outputChan := p.getOrCreateChannel(modifier.output)
+
+		group.Go(func() error {
+			return modifier.function(groupCtx, inputChan, outputChan)
+		})
+	}
+
+	for _, mux := range p.muxers {
+		outputChan := p.getOrCreateChannel(mux.output)
+		inputChannels := make([]chan string, len(mux.inputs))
+
+		for idx, name := range mux.inputs {
+			inputChannels[idx] = p.getOrCreateChannel(name)
+		}
+
+		group.Go(func() error {
+			return mux.function(groupCtx, inputChannels, outputChan)
+		})
+	}
+
+	for _, splitter := range p.splitters {
+		inputChan := p.getOrCreateChannel(splitter.input)
+		outputChannels := make([]chan string, len(splitter.outputs))
+
+		for idx, name := range splitter.outputs {
+			outputChannels[idx] = p.getOrCreateChannel(name)
+		}
+
+		group.Go(func() error {
+			return splitter.function(groupCtx, inputChan, outputChannels)
+		})
+	}
+
 	if err := group.Wait(); err != nil {
 		return fmt.Errorf("pipeline execution failed: %w", err)
 	}
