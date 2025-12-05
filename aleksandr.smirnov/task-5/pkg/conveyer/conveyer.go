@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"fmt"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var ErrChannelNotFound = errors.New("chan not found")
@@ -152,4 +155,16 @@ func (p *Pipeline) RegisterSeparator(
 		input:    input,
 		outputs:  outputs,
 	})
+}
+
+func (p *Pipeline) Run(ctx context.Context) error {
+	defer p.closeAllChannels()
+
+	group, groupCtx := errgroup.WithContext(ctx)
+
+	if err := group.Wait(); err != nil {
+		return fmt.Errorf("pipeline execution failed: %w", err)
+	}
+
+	return nil
 }
