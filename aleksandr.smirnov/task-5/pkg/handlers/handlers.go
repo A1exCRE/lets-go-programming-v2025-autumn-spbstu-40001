@@ -92,7 +92,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 						return nil
 					}
 
-					if strings.Contains(data, noMultiplexer) {
+					if strings.Contains(data, noMultiplexerText) {
 						continue
 					}
 
